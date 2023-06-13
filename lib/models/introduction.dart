@@ -4,29 +4,36 @@ class Introduction {
   String? introTempleImage;
   String? introTempleName;
   String? introTempleDetail;
+  String? geographies; // added this line
 
-  Introduction(
-      {this.message,
-      this.introId,
-      this.introTempleImage,
-      this.introTempleName,
-      this.introTempleDetail});
+  Introduction({
+    this.message,
+    this.introId,
+    this.introTempleImage,
+    this.introTempleName,
+    this.introTempleDetail,
+    this.geographies,
+  });
 
-  Introduction.fromJson(Map<String, dynamic> json) {
-    message = json['message'];
-    introId = json['introId'];
-    introTempleImage = json['introTempleImage'];
-    introTempleName = json['introTempleName'];
-    introTempleDetail = json['introTempleDetail'];
+  factory Introduction.fromJson(Map<String, dynamic> json) {
+    return Introduction(
+      message: json['message'],
+      introId: json['introId'],
+      introTempleImage: json['introTempleImage'],
+      introTempleName: json['introTempleName'],
+      introTempleDetail: json['introTempleDetail'],
+      geographies: json['geographies'], // added this line
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['message'] = this.message;
-    data['introId'] = this.introId;
-    data['introTempleImage'] = this.introTempleImage;
-    data['introTempleName'] = this.introTempleName;
-    data['introTempleDetail'] = this.introTempleDetail;
-    return data;
+    return {
+      'message': message,
+      'introId': introId,
+      'introTempleImage': introTempleImage,
+      'introTempleName': introTempleName,
+      'introTempleDetail': introTempleDetail,
+      'geographies': geographies, // added this line
+    };
   }
 }

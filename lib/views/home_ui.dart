@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:thai_temple_app/utils/app_color.dart';
 
 class HomeUI extends StatefulWidget {
   const HomeUI({super.key});
@@ -14,10 +15,10 @@ class _HomeUIState extends State<HomeUI> {
       appBar: AppBar(
         title: Text("Home"),
         centerTitle: true,
-        backgroundColor: Colors.yellow,
-        foregroundColor: Colors.black,
+        backgroundColor: AppColor.primary,
+        foregroundColor: AppColor.font_color,
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: AppColor.background,
       body: Center(
         child: Column(
           children: [],
