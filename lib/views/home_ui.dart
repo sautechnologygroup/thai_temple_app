@@ -15,7 +15,7 @@ class _HomeUIState extends State<HomeUI> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "วัดไทย",
+          "วัดไทยxxx",
           style: GoogleFonts.kanit(),
         ),
         centerTitle: true,
