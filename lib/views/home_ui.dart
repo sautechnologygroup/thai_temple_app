@@ -15,7 +15,7 @@ class _HomeUIState extends State<HomeUI> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "วัดไทย",
+          "วัดไทย V.1.0",
           style: GoogleFonts.kanit(),
         ),
         centerTitle: true,
@@ -59,8 +59,7 @@ class _HomeUIState extends State<HomeUI> {
                 itemBuilder: (BuildContext context, int index) {
                   return ListTile(
                     leading: Icon(Icons.info),
-                    title: Text(
-                        'Temple Information'), // Replace with your temple information
+                    title: Text('Temple Information'), // Replace with your temple information
                     onTap: () {
                       // Navigate to Detail page
                     },
