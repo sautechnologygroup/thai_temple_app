@@ -35,8 +35,7 @@ class _IntroductionUIState extends State<IntroductionUI> {
       backgroundColor: AppColor.background,
       body: FutureBuilder<List<Introduction>>(
         future: futureIntroduction,
-        builder: (BuildContext buildContext,
-            AsyncSnapshot<List<Introduction>> snapshot) {
+        builder: (BuildContext buildContext, AsyncSnapshot<List<Introduction>> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
               child: CircularProgressIndicator(
@@ -48,16 +47,16 @@ class _IntroductionUIState extends State<IntroductionUI> {
               child: Text('Error: ${snapshot.error}'),
             );
           } else {
-            return SingleChildScrollView(
-              child: Container(
-                height: MediaQuery.of(context).size.height -
-                    MediaQuery.of(context).padding.top,
-                child: Column(
-                  children: [
-                    Container(
-                      height: MediaQuery.of(context).size.width * 0.1,
-                    ),
-                    Expanded(
+            return Container(
+              height: MediaQuery.of(context).size.height,
+              color: AppColor.background,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        top: MediaQuery.of(context).size.height * 0.05,
+                      ),
                       child: IntroductionScreen(
                         scrollPhysics: BouncingScrollPhysics(),
                         isTopSafeArea: true,
@@ -66,6 +65,7 @@ class _IntroductionUIState extends State<IntroductionUI> {
                             intro.introTempleName!,
                             intro.introTempleDetail!,
                             'https://thaitemple.sautechnology.com/images/introduction/${intro.introTempleImage}',
+                            intro.geographies!,
                           );
                         }).toList(),
                         showSkipButton: true,
@@ -110,8 +110,8 @@ class _IntroductionUIState extends State<IntroductionUI> {
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             );
           }
@@ -129,15 +129,26 @@ class _IntroductionUIState extends State<IntroductionUI> {
     );
   }
 
-  PageViewModel _buildPageViewModel(
-      String title, String body, String imageUrl) {
+  PageViewModel _buildPageViewModel(String title, String body, String imageUrl, String geo) {
     return PageViewModel(
-      titleWidget: Text(
-        title,
-        style: GoogleFonts.kanit(
-          fontSize: MediaQuery.of(context).size.width * 0.06,
-          fontWeight: FontWeight.bold,
-        ),
+      titleWidget: Column(
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.kanit(
+              fontSize: MediaQuery.of(context).size.width * 0.06,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            '(${geo})',
+            style: GoogleFonts.kanit(
+              fontSize: MediaQuery.of(context).size.width * 0.04,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
       bodyWidget: Column(
         children: [
