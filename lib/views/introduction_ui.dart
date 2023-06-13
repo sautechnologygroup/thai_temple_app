@@ -74,7 +74,7 @@ class _IntroductionUIState extends State<IntroductionUI> {
                         dotsFlex: 0,
                         nextFlex: 1,
                         skip: Text(
-                          'Skip',
+                          'Skips',
                           style: GoogleFonts.kanit(
                             fontSize: MediaQuery.of(context).size.width * 0.04,
                             color: AppColor.font_color,

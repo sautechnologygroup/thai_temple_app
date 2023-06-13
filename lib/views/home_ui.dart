@@ -59,8 +59,7 @@ class _HomeUIState extends State<HomeUI> {
                 itemBuilder: (BuildContext context, int index) {
                   return ListTile(
                     leading: Icon(Icons.info),
-                    title: Text(
-                        'Temple Information'), // Replace with your temple information
+                    title: Text('Temple Information'), // Replace with your temple information
                     onTap: () {
                       // Navigate to Detail page
                     },
