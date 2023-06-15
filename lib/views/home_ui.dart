@@ -1,161 +1,144 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:thai_temple_app/utils/app_color.dart';
-import 'package:thai_temple_app/services/call_temple_api.dart';
 import 'package:thai_temple_app/models/temple.dart';
+import 'package:thai_temple_app/services/call_temple_api.dart';
+import 'package:geolocator/geolocator.dart';
 
 class HomeUI extends StatefulWidget {
   const HomeUI({Key? key}) : super(key: key);
 
   @override
-  State<HomeUI> createState() => _HomeUIState();
+  _HomeUIState createState() => _HomeUIState();
 }
 
 class _HomeUIState extends State<HomeUI> {
-  late Future<List<Temple>> futureTemple;
+  Future<List<Temple>>? _templesFuture;
 
   @override
   void initState() {
     super.initState();
-    _getAllTemple();
+    _templesFuture = _fetchTemples();
   }
 
-  void _getAllTemple() {
-    setState(() {
-      futureTemple = CallTempleApi.getAllTemple();
-    });
+  Future<List<Temple>> _fetchTemples() async {
+    LocationPermission locationPermission = await Geolocator.checkPermission();
+
+    if (locationPermission == LocationPermission.denied ||
+        locationPermission == LocationPermission.deniedForever) {
+      // Location permission is denied. Request permission from the user.
+      locationPermission = await Geolocator.requestPermission();
+
+      if (locationPermission != LocationPermission.whileInUse &&
+          locationPermission != LocationPermission.always) {
+        throw Exception('Location permission denied.');
+      }
+    }
+
+    Position userPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    return await CallTempleApi.getAllTemple(userPosition);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColor.background,
+      appBar: AppBar(
+        title: Text(
+          "วัดไทย",
+          style: GoogleFonts.kanit(),
+        ),
+        centerTitle: true,
+        backgroundColor: AppColor.primary,
+      ),
       body: FutureBuilder<List<Temple>>(
-        future: futureTemple,
-        builder:
-            (BuildContext buildContext, AsyncSnapshot<List<Temple>> snapshot) {
+        future: _templesFuture,
+        builder: (BuildContext context, AsyncSnapshot<List<Temple>> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: CircularProgressIndicator(
-                color: AppColor.primary_accent,
-              ),
-            );
+            return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(
-              child: Text('Error: ${snapshot.error}'),
-            );
+            if (snapshot.error is Exception &&
+                snapshot.error
+                    .toString()
+                    .contains('Location permission denied.')) {
+              return Text(
+                  'Location permission denied. Please grant the permission to use this feature.');
+            } else {
+              return Text('Error: ${snapshot.error}');
+            }
           } else {
-            return Container(
-              height: MediaQuery.of(context).size.height,
-              color: AppColor.background,
+            List<Temple> temples = snapshot.data!;
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
               child: Column(
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).size.height * 0.05,
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.all(10.0),
+                    child: TextField(
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Search',
+                        prefixIcon: Icon(Icons.search),
                       ),
-                      child: ListView.builder(
-                        itemCount: snapshot.data!.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return Padding(
-                            padding: EdgeInsets.only(
-                              left: MediaQuery.of(context).size.width * 0.05,
-                              right: MediaQuery.of(context).size.width * 0.05,
-                              bottom: MediaQuery.of(context).size.height * 0.02,
-                            ),
-                            child: Container(
-                              height: MediaQuery.of(context).size.height * 0.2,
-                              decoration: BoxDecoration(
-                                color: AppColor.primary,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    flex: 1,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(20),
-                                          bottomLeft: Radius.circular(20),
-                                        ),
-                                        image: DecorationImage(
-                                          image: NetworkImage(
-                                            snapshot.data![index].image,
-                                          ),
-                                          fit: BoxFit.cover,
-                                        ),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: temples.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        Temple temple = temples[index];
+                        return ListTile(
+                          // leading: Icon(Icons.info),
+                          title: Column(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  // Navigate to Detail Page with the selected temple
+                                },
+                                child: Card(
+                                  child: Column(
+                                    children: [
+                                      Image.network(
+                                        'https://thaitemple.sautechnology.com/images/temple/${temple.templeImage}',
+                                        fit: BoxFit.cover,
                                       ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    flex: 2,
-                                    child: Padding(
-                                      padding: EdgeInsets.only(
-                                        left:
-                                            MediaQuery.of(context).size.width *
-                                                0.05,
-                                        right:
-                                            MediaQuery.of(context).size.width *
-                                                0.05,
-                                      ),
-                                      child: Column(
+                                      Row(
                                         mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Text(
-                                            snapshot.data![index].name,
-                                            style: GoogleFonts.kanit(
-                                              textStyle: TextStyle(
-                                                color: AppColor.primary_accent,
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
+                                          IconButton(
+                                            icon: Icon(Icons.favorite),
+                                            onPressed: () {
+                                              // Handle like button press
+                                            },
                                           ),
-                                          SizedBox(
-                                            height: MediaQuery.of(context)
-                                                    .size
-                                                    .height *
-                                                0.01,
-                                          ),
-                                          Text(
-                                            snapshot.data![index].address,
-                                            style: GoogleFonts.kanit(
-                                              textStyle: TextStyle(
-                                                color: AppColor.primary_accent,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            height: MediaQuery.of(context)
-                                                    .size
-                                                    .height *
-                                                0.01,
-                                          ),
-                                          Text(
-                                            snapshot.data![index].province,
-                                            style: GoogleFonts.kanit(
-                                              textStyle: TextStyle(
-                                                color: AppColor.primary_accent,
-                                                fontSize: 16,
-                                              ),
-                                            ),
+                                          IconButton(
+                                            icon: Icon(Icons.share),
+                                            onPressed: () {
+                                              // Handle share button press
+                                            },
                                           ),
                                         ],
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
+                              SizedBox(height: 8.0),
+                              Text(
+                                temple.templeName,
+                                style: TextStyle(
+                                    fontSize: 18.0,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                temple.templeDetail,
+                                style: TextStyle(fontSize: 16.0),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -164,255 +147,34 @@ class _HomeUIState extends State<HomeUI> {
           }
         },
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: AppColor.background,
+        selectedItemColor: AppColor.primary,
+        unselectedItemColor: Colors.grey,
+        currentIndex: 0,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.place),
+            label: 'Temple',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.event),
+            label: 'Event',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'Favorite',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-// import 'package:flutter/material.dart';
-// import 'package:google_fonts/google_fonts.dart';
-// import 'package:thai_temple_app/models/introduction.dart';
-// import 'package:thai_temple_app/services/api_service.dart';
-// import 'package:thai_temple_app/utils/app_color.dart';
-
-// class HomeUI extends StatefulWidget {
-//   const HomeUI({Key? key}) : super(key: key);
-
-//   @override
-//   _HomeUIState createState() => _HomeUIState();
-// }
-
-// class _HomeUIState extends State<HomeUI> {
-//   List<Introduction> introductionList = [];
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     fetchData();
-//   }
-
-//   Future<void> fetchData() async {
-//     try {
-//       introductionList = await ApiService.fetchIntroductions();
-//       setState(() {});
-//     } catch (e) {
-//       // Handle error
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text(
-//           "วัดไทย",
-//           style: GoogleFonts.kanit(),
-//         ),
-//         centerTitle: true,
-//         backgroundColor: AppColor.primary,
-//       ),
-//       body: Padding(
-//         padding: const EdgeInsets.all(16.0),
-//         child: Column(
-//           children: <Widget>[
-//             Padding(
-//               padding: EdgeInsets.all(10.0),
-//               child: TextField(
-//                 decoration: InputDecoration(
-//                   border: OutlineInputBorder(),
-//                   labelText: 'Search',
-//                   prefixIcon: Icon(Icons.search),
-//                 ),
-//               ),
-//             ),
-//             Container(
-//               height: 200.0,
-//               child: ListView.builder(
-//                 scrollDirection: Axis.horizontal,
-//                 itemCount: introductionList.length,
-//                 itemBuilder: (BuildContext context, int index) {
-//                   final introduction = introductionList[index];
-//                   return Container(
-//                     width: 160.0,
-//                     child: Card(
-//                       child: Image.network(
-//                         introduction.templeImage,
-//                         fit: BoxFit.cover,
-//                       ),
-//                     ),
-//                   );
-//                 },
-//               ),
-//             ),
-//             Expanded(
-//               child: ListView.builder(
-//                 itemCount: introductionList.length,
-//                 itemBuilder: (BuildContext context, int index) {
-//                   final introduction = introductionList[index];
-//                   return ListTile(
-//                     leading: Icon(Icons.info),
-//                     title: Text(introduction.templeName),
-//                     onTap: () {
-//                       // Navigate to Detail page
-//                     },
-//                   );
-//                 },
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//       bottomNavigationBar: BottomNavigationBar(
-//         backgroundColor: AppColor.background,
-//         selectedItemColor: AppColor.primary,
-//         unselectedItemColor: Colors.grey,
-//         items: const <BottomNavigationBarItem>[
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.home),
-//             label: 'Home',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.place),
-//             label: 'Temple',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.event),
-//             label: 'Event',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.favorite),
-//             label: 'Favorite',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.person),
-//             label: 'User',
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-
-
-
-
-
-
-
-
-
-
-// import 'package:flutter/material.dart';
-// import 'package:google_fonts/google_fonts.dart';
-// import 'package:thai_temple_app/utils/app_color.dart';
-
-// class HomeUI extends StatefulWidget {
-//   const HomeUI({Key? key}) : super(key: key);
-
-//   @override
-//   _HomeUIState createState() => _HomeUIState();
-// }
-
-// class _HomeUIState extends State<HomeUI> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text(
-//           "วัดไทย",
-//           style: GoogleFonts.kanit(),
-//         ),
-//         centerTitle: true,
-//         backgroundColor: AppColor.primary,
-//       ),
-//       body: Padding(
-//         padding: const EdgeInsets.all(16.0),
-//         child: Column(
-//           children: <Widget>[
-//             Padding(
-//               padding: EdgeInsets.all(10.0),
-//               child: TextField(
-//                 decoration: InputDecoration(
-//                   border: OutlineInputBorder(),
-//                   labelText: 'Search',
-//                   prefixIcon: Icon(Icons.search),
-//                 ),
-//               ),
-//             ),
-//             Container(
-//               height: 200.0,
-//               child: ListView.builder(
-//                 scrollDirection: Axis.horizontal,
-//                 itemCount: 10,
-//                 itemBuilder: (BuildContext context, int index) {
-//                   return Container(
-//                     width: 160.0,
-//                     child: Card(
-//                       child: Image.network(
-//                         'https://thaitemple.sautechnology.com/images/introduction/img1_1.jpg', // Replace with your image URL
-//                         fit: BoxFit.cover,
-//                       ),
-//                     ),
-//                   );
-//                 },
-//               ),
-//             ),
-//             Expanded(
-//               child: ListView.builder(
-//                 itemCount: 10, // Replace with your item count
-//                 itemBuilder: (BuildContext context, int index) {
-//                   return ListTile(
-//                     leading: Icon(Icons.info),
-//                     title: Text(
-//                         'Temple Information'), // Replace with your temple information
-//                     onTap: () {
-//                       // Navigate to Detail page
-//                     },
-//                   );
-//                 },
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//       bottomNavigationBar: BottomNavigationBar(
-//         backgroundColor: AppColor.background,
-//         selectedItemColor: AppColor.primary,
-//         unselectedItemColor: Colors.grey,
-//         items: const <BottomNavigationBarItem>[
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.home),
-//             label: 'Home',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.place),
-//             label: 'Temple',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.event),
-//             label: 'Event',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.favorite),
-//             label: 'Favorite',
-//           ),
-//           BottomNavigationBarItem(
-//             icon: Icon(Icons.person),
-//             label: 'User',
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
