@@ -135,6 +135,12 @@ class _HomeUIState extends State<HomeUI> {
                                 temple.templeDetail,
                                 style: TextStyle(fontSize: 16.0),
                               ),
+                              SizedBox(height: 8.0),
+                              Text(
+                                // show distance in km / 1000
+                                'Distance: ${temple.distance.toStringAsFixed(2)} km',
+                                style: TextStyle(fontSize: 14.0),
+                              ),
                             ],
                           ),
                         );
