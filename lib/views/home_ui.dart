@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_launcher_icons/utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:thai_temple_app/utils/app_color.dart';
 import 'package:thai_temple_app/models/temple.dart';
@@ -57,7 +56,11 @@ class _HomeUIState extends State<HomeUI> {
 
   Widget _buildTempleList(List<Temple> temples) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.only(
+        top: 16,
+        left: 16,
+        right: 16,
+      ),
       child: Column(
         children: <Widget>[
           Padding(
@@ -121,9 +124,10 @@ class _HomeUIState extends State<HomeUI> {
                                       const EdgeInsets.symmetric(vertical: 8.0),
                                   child: Text(
                                     temple.templeName,
-                                    style: TextStyle(
-                                      fontSize: 18.0,
+                                    style: GoogleFonts.charmonman(
+                                      fontSize: 20.0,
                                       fontWeight: FontWeight.bold,
+                                      color: AppColor.primary,
                                     ),
                                     overflow: TextOverflow
                                         .ellipsis, // Truncate long names with an ellipsis
@@ -150,7 +154,9 @@ class _HomeUIState extends State<HomeUI> {
                           ),
                           child: Text(
                             temple.templeDetail,
-                            style: TextStyle(fontSize: 16.0),
+                            style: GoogleFonts.sriracha(
+                              fontSize: 16.0,
+                            ),
                           ),
                         ),
                       ],
@@ -187,7 +193,11 @@ class _HomeUIState extends State<HomeUI> {
       appBar: AppBar(
         title: Text(
           "วัดไทย",
-          style: GoogleFonts.kanit(),
+          style: GoogleFonts.charmonman(
+            fontSize: 30.0,
+            fontWeight: FontWeight.bold,
+            color: AppColor.font_color,
+          ),
         ),
         centerTitle: true,
         backgroundColor: AppColor.primary,
@@ -225,6 +235,13 @@ class _HomeUIState extends State<HomeUI> {
             label: 'Profile',
           ),
         ],
+        selectedLabelStyle: GoogleFonts.charmonman(
+          fontWeight: FontWeight.bold,
+          fontSize: 12, // Adjust the font size as needed
+        ),
+        unselectedLabelStyle: GoogleFonts.charmonman(
+          fontSize: 12, // Adjust the font size as needed
+        ),
       ),
     );
   }
