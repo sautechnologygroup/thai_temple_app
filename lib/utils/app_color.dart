@@ -9,5 +9,5 @@ class AppColor {
   static Color primary_accent = Color.fromARGB(255, 230, 178, 8);
   static Color secondary_accent = Color.fromARGB(255, 255, 156, 7);
   static Color font_color = Colors.deepOrange;
-  static Color alt_font_color = Colors.black;
+  static Color alt_font_color = Colors.white;
 }

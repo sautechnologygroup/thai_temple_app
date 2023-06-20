@@ -80,9 +80,9 @@ class _HomeUIState extends State<HomeUI> {
                 final temple = temples[index];
 
                 return GestureDetector(
-                  onTap: () {
-                    // Navigate to Detail Page with the selected temple
-                  },
+                  // onTap: () {
+                  //   // Navigate to Detail Page with the selected temple
+                  // },
                   child: Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15.0),
@@ -156,6 +156,7 @@ class _HomeUIState extends State<HomeUI> {
                             temple.templeDetail,
                             style: GoogleFonts.sriracha(
                               fontSize: 16.0,
+                              fontWeight: FontWeight.w200,
                             ),
                           ),
                         ),
@@ -194,9 +195,9 @@ class _HomeUIState extends State<HomeUI> {
         title: Text(
           "วัดไทย",
           style: GoogleFonts.charmonman(
-            fontSize: 30.0,
+            fontSize: 25.0,
             fontWeight: FontWeight.bold,
-            color: AppColor.font_color,
+            color: AppColor.alt_font_color,
           ),
         ),
         centerTitle: true,
