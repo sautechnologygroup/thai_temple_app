@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_launcher_icons/utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:thai_temple_app/utils/app_color.dart';
 import 'package:thai_temple_app/models/temple.dart';
 import 'package:thai_temple_app/services/call_temple_api.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class HomeUI extends StatefulWidget {
   const HomeUI({Key? key}) : super(key: key);
@@ -13,7 +15,7 @@ class HomeUI extends StatefulWidget {
 }
 
 class _HomeUIState extends State<HomeUI> {
-  Future<List<Temple>>? _templesFuture;
+  late Future<List<Temple>> _templesFuture;
 
   @override
   void initState() {
@@ -22,11 +24,10 @@ class _HomeUIState extends State<HomeUI> {
   }
 
   Future<List<Temple>> _fetchTemples() async {
-    LocationPermission locationPermission = await Geolocator.checkPermission();
+    var locationPermission = await Geolocator.checkPermission();
 
     if (locationPermission == LocationPermission.denied ||
         locationPermission == LocationPermission.deniedForever) {
-      // Location permission is denied. Request permission from the user.
       locationPermission = await Geolocator.requestPermission();
 
       if (locationPermission != LocationPermission.whileInUse &&
@@ -35,9 +36,141 @@ class _HomeUIState extends State<HomeUI> {
       }
     }
 
-    Position userPosition = await Geolocator.getCurrentPosition(
+    final userPosition = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-    return await CallTempleApi.getAllTemple(userPosition);
+    return CallTempleApi.getAllTemple(userPosition);
+  }
+
+  Widget _buildLoadingIndicator() {
+    return Center(child: CircularProgressIndicator());
+  }
+
+  Widget _buildLocationPermissionDenied() {
+    return Text(
+      'Location permission denied. Please grant the permission to use this feature.',
+    );
+  }
+
+  Widget _buildErrorWidget(dynamic error) {
+    return Text('Error: $error');
+  }
+
+  Widget _buildTempleList(List<Temple> temples) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: <Widget>[
+          Padding(
+            padding: EdgeInsets.all(10.0),
+            child: TextField(
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Search',
+                prefixIcon: Icon(Icons.search),
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: temples.length,
+              itemBuilder: (BuildContext context, int index) {
+                final temple = temples[index];
+
+                return GestureDetector(
+                  onTap: () {
+                    // Navigate to Detail Page with the selected temple
+                  },
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
+                    child: Column(
+                      children: [
+                        CachedNetworkImage(
+                          imageUrl:
+                              'https://thaitemple.sautechnology.com/images/temple/${temple.templeMainImage}',
+                          fit: BoxFit.fitWidth,
+                          width: MediaQuery.of(context).size.width,
+                          placeholder: (context, url) =>
+                              CircularProgressIndicator(),
+                          errorWidget: (context, url, error) =>
+                              Icon(Icons.error),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.favorite),
+                              onPressed: () {
+                                // Handle like button press
+                              },
+                            ),
+                            Flexible(
+                              child: Container(
+                                alignment: Alignment.center,
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8.0),
+                                  child: Text(
+                                    temple.templeName,
+                                    style: TextStyle(
+                                      fontSize: 18.0,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    overflow: TextOverflow
+                                        .ellipsis, // Truncate long names with an ellipsis
+                                    maxLines: 2, // Limit to 2 lines
+                                    textAlign: TextAlign
+                                        .center, // Center the text within each line
+                                  ),
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.share),
+                              onPressed: () {
+                                // Handle share button press
+                              },
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal:
+                                MediaQuery.of(context).size.width * 0.05,
+                            vertical: MediaQuery.of(context).size.width * 0.05,
+                          ),
+                          child: Text(
+                            temple.templeDetail,
+                            style: TextStyle(fontSize: 16.0),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBodyWidget(AsyncSnapshot<List<Temple>> snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return _buildLoadingIndicator();
+    } else if (snapshot.hasError) {
+      if (snapshot.error is Exception &&
+          snapshot.error.toString().contains('Location permission denied.')) {
+        return _buildLocationPermissionDenied();
+      } else {
+        return _buildErrorWidget(snapshot.error);
+      }
+    } else {
+      final temples = snapshot.data!;
+      return _buildTempleList(temples);
+    }
   }
 
   @override
@@ -54,103 +187,7 @@ class _HomeUIState extends State<HomeUI> {
       body: FutureBuilder<List<Temple>>(
         future: _templesFuture,
         builder: (BuildContext context, AsyncSnapshot<List<Temple>> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            if (snapshot.error is Exception &&
-                snapshot.error
-                    .toString()
-                    .contains('Location permission denied.')) {
-              return Text(
-                  'Location permission denied. Please grant the permission to use this feature.');
-            } else {
-              return Text('Error: ${snapshot.error}');
-            }
-          } else {
-            List<Temple> temples = snapshot.data!;
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: <Widget>[
-                  Padding(
-                    padding: EdgeInsets.all(10.0),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Search',
-                        prefixIcon: Icon(Icons.search),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: temples.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        Temple temple = temples[index];
-                        return ListTile(
-                          // leading: Icon(Icons.info),
-                          title: Column(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  // Navigate to Detail Page with the selected temple
-                                },
-                                child: Card(
-                                  child: Column(
-                                    children: [
-                                      Image.network(
-                                        'https://thaitemple.sautechnology.com/images/temple/${temple.templeImage}',
-                                        fit: BoxFit.cover,
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          IconButton(
-                                            icon: Icon(Icons.favorite),
-                                            onPressed: () {
-                                              // Handle like button press
-                                            },
-                                          ),
-                                          IconButton(
-                                            icon: Icon(Icons.share),
-                                            onPressed: () {
-                                              // Handle share button press
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 8.0),
-                              Text(
-                                temple.templeName,
-                                style: TextStyle(
-                                    fontSize: 18.0,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                temple.templeDetail,
-                                style: TextStyle(fontSize: 16.0),
-                              ),
-                              SizedBox(height: 8.0),
-                              Text(
-                                // show distance in km / 1000
-                                'Distance: ${temple.distance.toStringAsFixed(2)} km',
-                                style: TextStyle(fontSize: 14.0),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
+          return _buildBodyWidget(snapshot);
         },
       ),
       bottomNavigationBar: BottomNavigationBar(

@@ -4,7 +4,7 @@ class Temple {
   final String templeAddress;
   final double latitude; // Update the type to double
   final double longitude; // Update the type to double
-  final String templeImage;
+  final String templeMainImage;
   final String templeDetail;
   final int provinceId;
   final int districtId;
@@ -17,7 +17,7 @@ class Temple {
     required this.templeAddress,
     required this.latitude,
     required this.longitude,
-    required this.templeImage,
+    required this.templeMainImage,
     required this.templeDetail,
     required this.provinceId,
     required this.districtId,
@@ -33,7 +33,7 @@ class Temple {
       templeAddress: json['templeAddress'] ?? '',
       latitude: _parseDouble(json['latitude']),
       longitude: _parseDouble(json['longitude']),
-      templeImage: json['templeImage'] ?? '',
+      templeMainImage: json['templeMainImage'] ?? '',
       templeDetail: json['templeDetail'] ?? '',
       provinceId: json['provinceId'] != null
           ? int.parse(json['provinceId'].toString())
@@ -67,7 +67,7 @@ class Temple {
       'templeAddress': templeAddress,
       'latitude': latitude,
       'longitude': longitude,
-      'templeImage': templeImage,
+      'templeMainImage': templeMainImage,
       'templeDetail': templeDetail,
       'provinceId': provinceId,
       'districtId': districtId,
