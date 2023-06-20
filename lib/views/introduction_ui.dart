@@ -6,6 +6,7 @@ import 'package:thai_temple_app/views/home_ui.dart';
 
 import '../models/introduction.dart';
 import '../services/call_introduction_api.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class IntroductionUI extends StatefulWidget {
   const IntroductionUI({Key? key}) : super(key: key);
@@ -35,7 +36,8 @@ class _IntroductionUIState extends State<IntroductionUI> {
       backgroundColor: AppColor.background,
       body: FutureBuilder<List<Introduction>>(
         future: futureIntroduction,
-        builder: (BuildContext buildContext, AsyncSnapshot<List<Introduction>> snapshot) {
+        builder: (BuildContext buildContext,
+            AsyncSnapshot<List<Introduction>> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
               child: CircularProgressIndicator(
@@ -74,8 +76,8 @@ class _IntroductionUIState extends State<IntroductionUI> {
                         dotsFlex: 0,
                         nextFlex: 1,
                         skip: Text(
-                          'Skips',
-                          style: GoogleFonts.kanit(
+                          'ข้าม',
+                          style: GoogleFonts.charmonman(
                             fontSize: MediaQuery.of(context).size.width * 0.04,
                             color: AppColor.font_color,
                           ),
@@ -85,8 +87,8 @@ class _IntroductionUIState extends State<IntroductionUI> {
                           color: AppColor.font_color,
                         ),
                         done: Text(
-                          'Next',
-                          style: GoogleFonts.kanit(
+                          'หน้าหลัก',
+                          style: GoogleFonts.charmonman(
                             fontSize: MediaQuery.of(context).size.width * 0.04,
                             color: AppColor.font_color,
                           ),
@@ -129,7 +131,8 @@ class _IntroductionUIState extends State<IntroductionUI> {
     );
   }
 
-  PageViewModel _buildPageViewModel(String title, String body, String imageUrl, String geo) {
+  PageViewModel _buildPageViewModel(
+      String title, String body, String imageUrl, String geo) {
     return PageViewModel(
       titleWidget: Column(
         children: [
@@ -169,14 +172,13 @@ class _IntroductionUIState extends State<IntroductionUI> {
           child: Container(
             width: MediaQuery.of(context).size.width * 0.8,
             height: MediaQuery.of(context).size.width * 0.8,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(
-                MediaQuery.of(context).size.width * 0.05,
+            child: CachedNetworkImage(
+              imageUrl: imageUrl,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => CircularProgressIndicator(
+                color: AppColor.primary_accent,
               ),
-              image: DecorationImage(
-                image: NetworkImage(imageUrl),
-                fit: BoxFit.cover,
-              ),
+              errorWidget: (context, url, error) => Icon(Icons.error),
             ),
           ),
         ),

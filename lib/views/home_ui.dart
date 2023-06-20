@@ -86,15 +86,23 @@ class _HomeUIState extends State<HomeUI> {
                     ),
                     child: Column(
                       children: [
-                        CachedNetworkImage(
-                          imageUrl:
-                              'https://thaitemple.sautechnology.com/images/temple/${temple.templeMainImage}',
-                          fit: BoxFit.fitWidth,
-                          width: MediaQuery.of(context).size.width,
-                          placeholder: (context, url) =>
-                              CircularProgressIndicator(),
-                          errorWidget: (context, url, error) =>
-                              Icon(Icons.error),
+                        Padding(
+                          padding: EdgeInsets.all(
+                              MediaQuery.of(context).size.width * 0.06),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                                10.0), // Adjust the radius as desired
+                            child: CachedNetworkImage(
+                              imageUrl:
+                                  'https://thaitemple.sautechnology.com/images/temple/${temple.templeMainImage}',
+                              fit: BoxFit.fitWidth,
+                              width: MediaQuery.of(context).size.width,
+                              placeholder: (context, url) =>
+                                  CircularProgressIndicator(),
+                              errorWidget: (context, url, error) =>
+                                  Icon(Icons.error),
+                            ),
+                          ),
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -127,7 +135,7 @@ class _HomeUIState extends State<HomeUI> {
                               ),
                             ),
                             IconButton(
-                              icon: Icon(Icons.share),
+                              icon: Icon(Icons.menu_book_rounded),
                               onPressed: () {
                                 // Handle share button press
                               },
